@@ -1,5 +1,5 @@
-export function waitNextTick(fn: Function){
-    setTimeout( ()=> {
-        fn()
-    }, 1)
+export function waitNextTick (fn: Function): void {
+  setTimeout(() => {
+    fn()
+  }, 1)
 }
