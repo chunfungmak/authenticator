@@ -7,6 +7,7 @@ interface QueryParam {
 }
 
 export type ConvertOtauthModel = {
+  url: string
   schema: string
   accountName: string
   token?: string
@@ -31,6 +32,7 @@ export const convertOtauthUrl = (url: string): ConvertOtauthModel => {
 
   return {
     ...queryParam,
+    url,
     schema,
     issuer,
     accountName

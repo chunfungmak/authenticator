@@ -1,5 +1,7 @@
+import './Token.css'
+
 import React, { useEffect, useState } from 'react'
-import { Button, Card, Space, Col, Row, Progress } from 'antd'
+import { Button, Card, Space, Col, Row, Progress, Modal } from 'antd'
 import { ConvertOtauthModel, convertOtauthUrl } from '../../util/ConvertOtauthUri'
 import * as Authenticator from 'authenticator'
 import { ScanQrModal } from '../../component/ScanQrModal/ScanQrModal'
@@ -8,6 +10,8 @@ import { StateModel } from '../../store/model/state.model'
 import { store } from '../../store'
 import { StateAction } from '../../store/reducer'
 import { copy } from '../../util/Copy'
+import { QrcodeOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import QRCodeSVG from 'qrcode.react'
 
 const TIME = 30
 
@@ -47,20 +51,58 @@ export function Token (): JSX.Element {
     triggerFn(payload)
   }
 
+  const removeQrValue = (index: number): void => {
+    const payload = Object.assign([], state.tokenList)
+    payload.splice(index, 1)
+    store.dispatch({
+      type: StateAction.SET_TOKEN_LIST,
+      data: payload
+    })
+    triggerFn(payload)
+  }
+
   return <>
+        <div style={{ position: 'absolute', bottom: '1rem', right: '1rem' }}>
+          <Button type="primary" onClick={() => { setIsModalVisible(true) }} shape="circle" icon={<PlusOutlined />} size='large'>
+          </Button>
+        </div>
         <ScanQrModal addQrValue={addQrValue} isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} key='ScanQrModal'/>
 
-        <Card style={{ margin: '0.5rem' }} title="Authenticator">
-            <Button type="primary" onClick={() => { setIsModalVisible(true) }}>
-                Add Account
-            </Button>
+        <Card style={{ margin: '0.5rem', fontSize: '1.25rem', fontWeight: '500' }}>
+          Authenticator
         </Card>
 
-        {tokenList.map((value) => {
+        {tokenList.map((value, index) => {
           return <>
-                <Card style={{ margin: '0.5rem' }} className="token-card">
+
+                <Card
+                    style={{ margin: '0.5rem' }}
+                    className="token-card"
+                >
                     <Space direction='vertical' size={1} style={{ width: '100%' }}>
-                        {value.issuer}
+                      <Row>
+                        <Col span={20}>
+                          {value.issuer}
+                        </Col>
+                        <Col span={4} style={{ textAlign: 'right' }}>
+                          <Space>
+                            <QrcodeOutlined
+                                onClick={() => Modal.confirm({
+                                  className: 'display-qr-modal',
+                                  icon: null,
+                                  maskClosable: true,
+                                  content: <div style={{ width: '100%', textAlign: 'center' }}>
+                                    <Button type='link' style={{ height: '20rem' }} onClick={() => { window.location.href = value.url }}>
+                                      <QRCodeSVG value={value.url} size={300}/>
+                                    </Button>
+                                  </div>
+                                })}
+                                style={{ fontSize: '1.25rem' }}
+                            />
+                            <DeleteOutlined onClick={() => removeQrValue(index)} style={{ fontSize: '1.25rem' }}/>
+                          </Space>
+                        </Col>
+                      </Row>
                       <Button type='link' onClick={() => { copy(value.token ?? '-') }} style={{ padding: 0, height: '4rem', marginLeft: '-0.25rem' }}>
                         <span className={'token' + (second >= 27 ? ' token-danger' : '')} key='TokenValue' >
                                 {value.token ?? '-'}
@@ -72,7 +114,7 @@ export function Token (): JSX.Element {
                             </Col>
                             <Col span={4} style={{ textAlign: 'right' }}>
                                 <Space>
-                                    <span style={{ height: 20 }} key='TokenTime'>{TIME - second}</span>
+                                    <span style={{ fontSize: '1rem' }} key='TokenTime' className={(second >= 27 ? ' token-danger' : '')}>{TIME - second}</span>
                                     <Progress
                                         className={'token-progress' + (second >= 27 ? ' token-progress-danger' : '')}
                                         type="circle"
