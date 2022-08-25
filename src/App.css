@@ -1,0 +1,22 @@
+@import '~antd/dist/antd.css';
+
+.App {
+  text-align: center;
+}
+
+.token-card .ant-card-body{
+  padding: 1rem
+}
+
+.token {
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #1890ff;
+}
+
+.token-danger,
+.token-progress-danger .ant-progress-circle-path{
+  --token-danger-color: crimson;
+  color: var(--token-danger-color) !important;
+  stroke: var(--token-danger-color) !important;
+}
