@@ -1,7 +1,7 @@
 import './Token.css'
 
 import React, { useEffect, useState } from 'react'
-import { Button, Card, Space, Col, Row, Progress, Modal } from 'antd'
+import { Button, Card, Space, Col, Row, Progress, Modal, Dropdown, Menu } from 'antd'
 import { ConvertOtauthModel, convertOtauthUrl } from '../../util/ConvertOtauthUri'
 import * as Authenticator from 'authenticator'
 import { ScanQrModal } from '../../component/ScanQrModal/ScanQrModal'
@@ -10,8 +10,9 @@ import { StateModel } from '../../store/model/state.model'
 import { store } from '../../store'
 import { StateAction } from '../../store/reducer'
 import { copy } from '../../util/Copy'
-import { QrcodeOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import { QrcodeOutlined, DeleteOutlined, PlusOutlined, MoreOutlined } from '@ant-design/icons'
 import QRCodeSVG from 'qrcode.react'
+import { ThemeSwitch } from '../../component/ThemeSwitch/ThemeSwitch'
 
 const TIME = 30
 
@@ -63,18 +64,37 @@ export function Token (): JSX.Element {
 
   return <>
         <div style={{ position: 'absolute', bottom: '1rem', right: '1rem' }}>
-          <Button type="primary" onClick={() => { setIsModalVisible(true) }} shape="circle" icon={<PlusOutlined />} size='large'>
+          <Button type="primary" onClick={() => { setIsModalVisible(true) }} shape="circle" icon={<PlusOutlined />} style={{ height: '3rem', width: '3rem' }}>
           </Button>
         </div>
         <ScanQrModal addQrValue={addQrValue} isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} key='ScanQrModal'/>
 
         <Card style={{ margin: '0.5rem', fontSize: '1.25rem', fontWeight: '500' }}>
-          Authenticator
+          <Row>
+            <Col span={20}>
+              Authenticator
+            </Col>
+            <Col span={4} style={{ textAlign: 'right' }}>
+              <Dropdown placement="bottomRight" overlay={ <Menu
+                  items={[
+                    {
+                      key: '1',
+                      label: (
+                          <ThemeSwitch />
+                      )
+                    }
+                  ]}
+              />}>
+                <a onClick={e => e.preventDefault()}>
+                    <MoreOutlined style={{ color: '#fff' }}/>
+                </a>
+              </Dropdown>
+            </Col>
+          </Row>
         </Card>
 
         {tokenList.map((value, index) => {
           return <>
-
                 <Card
                     style={{ margin: '0.5rem' }}
                     className="token-card"

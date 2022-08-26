@@ -1,38 +1,50 @@
 const webpack = require('webpack')
-const { getThemeVariables } = require('antd/dist/theme');
 
-module.exports = function override (config, env) {
+const {override, addWebpackPlugin, addWebpackResolve, addLessLoader} = require("customize-cra");
+const AntDesignThemePlugin = require("antd-theme-webpack-plugin");
+const {getLessVars} = require("antd-theme-generator");
+const path = require("path");
+const fs = require("fs");
 
-    config.plugins = [
-        ...config.plugins,
-        new webpack.ProvidePlugin({
-            Buffer: ['buffer', 'Buffer'],
-            process: 'process/browser',
-        })
-    ]
+const themeVariables = getLessVars(
+    path.join(__dirname, "./src/styles/variables.less")
+);
+const darkVars = getLessVars("./node_modules/antd/lib/style/themes/dark.less")
+const lightVars = getLessVars("./node_modules/antd/lib/style/themes/compact.less")
+fs.writeFileSync("./src/themes/dark.json", JSON.stringify(darkVars));
+fs.writeFileSync("./src/themes/light.json", JSON.stringify(lightVars));
+fs.writeFileSync("./src/themes/themes.json", JSON.stringify(themeVariables));
+const options = {
+    stylesDir: path.join(__dirname, "./src/styles"),
+    // antDir: path.join(__dirname, "./node_modules/antd"),
+    // 需更換 themes 的變數
+    themeVariables: Array.from(
+        new Set([
+            ...Object.keys(darkVars),
+            ...Object.keys(lightVars),
+            ...Object.keys(themeVariables),
+        ])
+    ),
+    generateOnce: false
+};
 
-    config.resolve.fallback = {
-       ...config.resolve.fallback,
-        "stream": require.resolve("stream-browserify"),
-        "crypto": require.resolve("crypto-browserify"),
-        "buffer": require.resolve("buffer/")
-    }
+module.exports = override(
+    addWebpackPlugin(new AntDesignThemePlugin(options)),
+    addLessLoader({
+        lessOptions: {
+            javascriptEnabled: true,
+        },
+    }),
+    addWebpackPlugin(new webpack.ProvidePlugin({
+        Buffer: ['buffer', 'Buffer'],
+        process: 'process/browser',
+    })),
+    addWebpackResolve({
+        fallback: {
+            "stream": require.resolve("stream-browserify"),
+            "crypto": require.resolve("crypto-browserify"),
+            "buffer": require.resolve("buffer/")
+        }
+    })
+);
 
-    config.module.rules= [
-        ...config.module.rules,
-        // {
-        //     loader: 'less-loader', // compiles Less to CSS
-        //      options: {
-        //      lessOptions: { // 如果使用less-loader@5，请移除 lessOptions 这一级直接配置选项。
-        //            modifyVars: getThemeVariables({
-        //                   dark: true, // 开启暗黑模式
-        //                    compact: true, // 开启紧凑模式
-        //                 }),
-        //             javascriptEnabled: true,
-        //      },
-        //    },
-// }
-    ]
-
-    return config
-}
