@@ -11,6 +11,13 @@ export type ConvertOtauthModel = {
   schema: string
   accountName: string
   token?: string
+  time?: {
+    period: number
+    timeLeft: number
+    window: number
+    fastForward: number
+    isFastForward: boolean
+  }
 } & QueryParam
 
 export const convertOtauthUrl = (url: string): ConvertOtauthModel => {

@@ -3,16 +3,16 @@ import './Token.css'
 import React, { useEffect, useState } from 'react'
 import { Button, Card, Space, Col, Row, Progress, Modal, Dropdown, Menu } from 'antd'
 import { ConvertOtauthModel, convertOtauthUrl } from '../../util/ConvertOtauthUri'
-import * as Authenticator from 'authenticator'
 import { ScanQrModal } from '../../component/ScanQrModal/ScanQrModal'
 import { useSelector } from 'react-redux'
 import { StateModel } from '../../store/model/state.model'
 import { store } from '../../store'
 import { StateAction } from '../../store/reducer'
 import { copy } from '../../util/Copy'
-import { QrcodeOutlined, DeleteOutlined, PlusOutlined, MoreOutlined } from '@ant-design/icons'
+import { QrcodeOutlined, DeleteOutlined, PlusOutlined, MoreOutlined, FastForwardOutlined, FastBackwardOutlined } from '@ant-design/icons'
 import QRCodeSVG from 'qrcode.react'
 import { ThemeSwitch } from '../../component/ThemeSwitch/ThemeSwitch'
+import { generateToken } from '../../util/GenerateToken'
 
 const TIME = 30
 
@@ -20,14 +20,24 @@ export function Token (): JSX.Element {
   const state = useSelector((state: StateModel) => state)
 
   const [isModalVisible, setIsModalVisible] = useState(false)
-  const [second, setSecond] = useState<number>(0)
 
   const [tokenList, setTokenList] = useState<ConvertOtauthModel[]>([])
   const triggerFn = (value?: ConvertOtauthModel[]): void => {
+    const time = new Date().getTime()
     setTokenList(tokenList => (value ?? tokenList).map(e => {
+      const period = e.period != null ? parseInt(e.period) : TIME
+      let timeLeft = period - Math.floor(time / 1000) % period
+      const window = Math.floor(time / 1000 / period)
+      const fastForward = e.time?.fastForward ?? window
+      const isFastForward = fastForward === window + 1
+      if (isFastForward) {
+        timeLeft += period
+      }
+      e.time = { period, timeLeft, window, fastForward, isFastForward }
+      if (timeLeft !== period && e.token != null) return e
       return {
         ...e,
-        token: Authenticator.generateToken(e.secret)
+        token: generateToken(e, isFastForward)
       }
     }))
   }
@@ -35,13 +45,51 @@ export function Token (): JSX.Element {
   useEffect(() => {
     triggerFn(state.tokenList)
     const interval = setInterval(() => {
-      const s = new Date().getSeconds() % TIME
-      setSecond(s)
-      if (s === 0) triggerFn()
+      triggerFn()
     }, 100)
 
     return () => clearInterval(interval)
   }, [])
+
+  const fastForwardToken = (index: number): void => {
+    const payload: ConvertOtauthModel[] = JSON.parse(JSON.stringify(state.tokenList))
+
+    const value = payload[index]
+    const period = value.period != null ? parseInt(value.period) : TIME
+
+    payload[index] = {
+      ...value,
+      time: {
+        period: 0,
+        timeLeft: 0,
+        window: 0,
+        fastForward: Math.floor(new Date().getTime() / 1000 / period) + 1,
+        isFastForward: true
+      }
+    }
+
+    triggerFn(payload)
+  }
+
+  const fastBackwardToken = (index: number): void => {
+    const payload: ConvertOtauthModel[] = JSON.parse(JSON.stringify(state.tokenList))
+
+    const value = payload[index]
+    const period = value.period != null ? parseInt(value.period) : TIME
+
+    payload[index] = {
+      ...value,
+      time: {
+        period: 0,
+        timeLeft: 0,
+        window: 0,
+        fastForward: Math.floor(new Date().getTime() / 1000 / period),
+        isFastForward: false
+      }
+    }
+
+    triggerFn(payload)
+  }
 
   const addQrValue = (value: string): void => {
     const payload = [...state.tokenList, convertOtauthUrl(value)]
@@ -63,7 +111,7 @@ export function Token (): JSX.Element {
   }
 
   return <>
-        <div style={{ position: 'absolute', bottom: '1rem', right: '1rem' }}>
+        <div style={{ position: 'fixed', bottom: '1rem', right: '1rem', zIndex: '999' }}>
           <Button type="primary" onClick={() => { setIsModalVisible(true) }} shape="circle" icon={<PlusOutlined />} style={{ height: '3rem', width: '3rem' }}>
           </Button>
         </div>
@@ -86,7 +134,7 @@ export function Token (): JSX.Element {
                   ]}
               />}>
                 <a onClick={e => e.preventDefault()}>
-                    <MoreOutlined style={{ color: '#fff' }}/>
+                    <MoreOutlined/>
                 </a>
               </Dropdown>
             </Col>
@@ -94,6 +142,14 @@ export function Token (): JSX.Element {
         </Card>
 
         {tokenList.map((value, index) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { period, timeLeft, isFastForward } = value.time ?? {
+            period: 0,
+            timeLeft: 0,
+            window: 0,
+            fastForward: 0,
+            isFastForward: false
+          }
           return <>
                 <Card
                     style={{ margin: '0.5rem' }}
@@ -113,7 +169,7 @@ export function Token (): JSX.Element {
                                   maskClosable: true,
                                   content: <div style={{ width: '100%', textAlign: 'center' }}>
                                     <Button type='link' style={{ height: '20rem' }} onClick={() => { window.location.href = value.url }}>
-                                      <QRCodeSVG value={value.url} size={300}/>
+                                      <QRCodeSVG value={value.url} size={300} style={{ border: '1rem solid #fff' }}/>
                                     </Button>
                                   </div>
                                 })}
@@ -124,28 +180,32 @@ export function Token (): JSX.Element {
                         </Col>
                       </Row>
                       <Button type='link' onClick={() => { copy(value.token ?? '-') }} style={{ padding: 0, height: '4rem', marginLeft: '-0.25rem' }}>
-                        <span className={'token' + (second >= 27 ? ' token-danger' : '')} key='TokenValue' >
+                        <span className={'token' + (timeLeft <= 3 ? ' token-danger' : '') + (isFastForward ? ' token-fast-forward' : '')} key='TokenValue' >
                                 {value.token ?? '-'}
                             </span>
                       </Button>
                         <Row>
                             <Col span={20}>
-                                {value.accountName}
+                                {value.accountName} ({value.period ?? `${TIME}s`})
                             </Col>
                             <Col span={4} style={{ textAlign: 'right' }}>
                                 <Space>
-                                    <span style={{ fontSize: '1rem' }} key='TokenTime' className={(second >= 27 ? ' token-danger' : '')}>{TIME - second}</span>
+                                  {
+                                  isFastForward
+                                    ? <FastBackwardOutlined onClick={() => { fastBackwardToken(index) }} />
+                                    : <FastForwardOutlined onClick={() => { fastForwardToken(index) }} />
+                                  }
+                                    <span style={{ fontSize: '1rem' }} key='TokenTime' className={(timeLeft <= 3 ? ' token-danger' : '') + (isFastForward ? ' token-fast-forward' : '')}>{timeLeft}</span>
                                     <Progress
-                                        className={'token-progress' + (second >= 27 ? ' token-progress-danger' : '')}
+                                        className={'token-progress' + (timeLeft <= 3 ? ' token-progress-danger' : '') + (isFastForward ? 'token-progress-fast-forward' : '')}
                                         type="circle"
                                         strokeWidth={24}
                                         width={'1.25rem' as any}
-                                        percent={Math.floor(second / TIME * 100)}
+                                        percent={period > timeLeft ? Math.floor((period - timeLeft) / period * 100) : 100}
                                         format={() => ''} />
                                 </Space>
                             </Col>
                         </Row>
-
                     </Space>
                 </Card>
 

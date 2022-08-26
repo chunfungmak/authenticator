@@ -1,4 +1,5 @@
 const webpack = require('webpack')
+const Dotenv = require('dotenv-webpack')
 
 const {override, addWebpackPlugin, addWebpackResolve, addLessLoader} = require("customize-cra");
 const AntDesignThemePlugin = require("antd-theme-webpack-plugin");
@@ -31,6 +32,7 @@ const options = {
 
 module.exports = override(
     addWebpackPlugin(new AntDesignThemePlugin(options)),
+    addWebpackPlugin(new Dotenv()),
     addLessLoader({
         lessOptions: {
             javascriptEnabled: true,
