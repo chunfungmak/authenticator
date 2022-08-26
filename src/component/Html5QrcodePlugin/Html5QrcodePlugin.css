@@ -35,10 +35,12 @@ img[alt~="Info"] {
     border-radius: 2px;
 
     color: #fff;
-    border-color: #1890ff;
-    background: #1890ff;
+    border-color: #109e92;
+    background: #109e92;
     text-shadow: 0 -1px 0 rgb(0 0 0 / 12%);
     box-shadow: 0 2px 0 rgb(0 0 0 / 5%);
+
+    margin-bottom: 1rem;
 }
 
 #html5qr-code-full-region__scan_region video:not(:last-of-type){

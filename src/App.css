@@ -22,3 +22,10 @@
   color: var(--token-danger-color) !important;
   stroke: var(--token-danger-color) !important;
 }
+
+.token-fast-forward,
+.token-progress-fast-forward .ant-progress-circle-path{
+  --token-fast-forward-color: #63a832;
+  color: var(--token-fast-forward-color) !important;
+  stroke: var(--token-fast-forward-color) !important;
+}

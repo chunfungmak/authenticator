@@ -20,6 +20,7 @@ module.exports = {
     '@typescript-eslint/eslint-plugin'
   ],
   rules: {
+    '@typescript-eslint/no-non-null-assertion': 'off'
   },
   ignorePatterns: ['.eslintrc.js'],
 }

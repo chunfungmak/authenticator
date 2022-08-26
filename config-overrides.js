@@ -1,4 +1,5 @@
 const webpack = require('webpack')
+const Dotenv = require('dotenv-webpack')
 
 const {override, addWebpackPlugin, addWebpackResolve, addLessLoader} = require("customize-cra");
 const AntDesignThemePlugin = require("antd-theme-webpack-plugin");
@@ -15,6 +16,7 @@ fs.writeFileSync("./src/themes/dark.json", JSON.stringify(darkVars));
 fs.writeFileSync("./src/themes/light.json", JSON.stringify(lightVars));
 fs.writeFileSync("./src/themes/themes.json", JSON.stringify(themeVariables));
 const options = {
+    publicPath: process.env.PUBLIC_URL || "",
     stylesDir: path.join(__dirname, "./src/styles"),
     // antDir: path.join(__dirname, "./node_modules/antd"),
     // 需更換 themes 的變數
@@ -30,6 +32,7 @@ const options = {
 
 module.exports = override(
     addWebpackPlugin(new AntDesignThemePlugin(options)),
+    addWebpackPlugin(new Dotenv()),
     addLessLoader({
         lessOptions: {
             javascriptEnabled: true,
