@@ -15,7 +15,7 @@ export function ThemeSwitch (): JSX.Element {
       void changeTheme(theme)
       store.dispatch({
         type: StateAction.SET_THEME,
-        data: THEME[value ? 'DARK' : 'LIGHT']
+        data: theme
       })
     }} />
     </>
