@@ -191,16 +191,14 @@ export function Token (): JSX.Element {
                             <Col span={19}>
                                 {value.accountName} ({value.period ?? `${TIME}s`})
                             </Col>
-                            <Col span={1} style={{ textAlign: 'center', fontSize: '1rem' }}>
-                              {
-                                isFastForward
-                                  ? <FastBackwardOutlined onClick={() => { fastBackwardToken(index) }} />
-                                  : <FastForwardOutlined onClick={() => { fastForwardToken(index) }} />
-                              }
-                            </Col>
-                            <Col span={4} style={{ textAlign: 'right' }}>
+                            <Col span={5} style={{ textAlign: 'right' }}>
                                 <Space>
-                                    <span style={{ fontSize: '1rem' }} key='TokenTime' className={(timeLeft <= 3 ? ' token-danger' : '') + (isFastForward ? ' token-fast-forward' : '')}>{timeLeft}</span>
+                                    {
+                                      isFastForward
+                                        ? <FastBackwardOutlined style={{ fontSize: '1rem' }} onClick={() => { fastBackwardToken(index) }} />
+                                        : <FastForwardOutlined style={{ fontSize: '1rem' }} onClick={() => { fastForwardToken(index) }} />
+                                    }
+                                    <span style={{ fontSize: '1rem', width: '1.25rem', display: 'inline-block' }} key='TokenTime' className={(timeLeft <= 3 ? ' token-danger' : '') + (isFastForward ? ' token-fast-forward' : '')}>{timeLeft}</span>
                                     <Progress
                                         className={'token-progress' + (timeLeft <= 3 ? ' token-progress-danger' : '') + (isFastForward ? 'token-progress-fast-forward' : '')}
                                         type="circle"
