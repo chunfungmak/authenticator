@@ -1,7 +1,7 @@
 import './Token.css'
 
 import React, { useEffect, useState } from 'react'
-import { Button, Card, Space, Col, Row, Progress, Modal, Dropdown, Menu } from 'antd'
+import { Button, Card, Space, Col, Row, Progress, Modal, Dropdown, Menu, Tag } from 'antd'
 import { ConvertOtauthModel, convertOtauthUrl } from '../../util/ConvertOtauthUri'
 import { ScanQrModal } from '../../component/ScanQrModal/ScanQrModal'
 import { useSelector } from 'react-redux'
@@ -120,7 +120,10 @@ export function Token (): JSX.Element {
         <Card style={{ margin: '0.5rem', fontSize: '1.25rem', fontWeight: '500' }}>
           <Row>
             <Col span={19}>
+              <Space>
               Authenticator
+              <Tag color="#109e92">{process.env.REACT_APP_BUILD_VERSION}</Tag>
+              </Space>
             </Col>
             <Col span={5} style={{ textAlign: 'right' }}>
               <Dropdown placement="bottomRight" overlay={ <Menu
