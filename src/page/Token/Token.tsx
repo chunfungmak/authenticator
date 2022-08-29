@@ -119,10 +119,10 @@ export function Token (): JSX.Element {
 
         <Card style={{ margin: '0.5rem', fontSize: '1.25rem', fontWeight: '500' }}>
           <Row>
-            <Col span={20}>
+            <Col span={19}>
               Authenticator
             </Col>
-            <Col span={4} style={{ textAlign: 'right' }}>
+            <Col span={5} style={{ textAlign: 'right' }}>
               <Dropdown placement="bottomRight" overlay={ <Menu
                   items={[
                     {
@@ -157,10 +157,10 @@ export function Token (): JSX.Element {
                 >
                     <Space direction='vertical' size={1} style={{ width: '100%' }}>
                       <Row>
-                        <Col span={20}>
+                        <Col span={19}>
                           {value.issuer}
                         </Col>
-                        <Col span={4} style={{ textAlign: 'right' }}>
+                        <Col span={5} style={{ textAlign: 'right' }}>
                           <Space>
                             <QrcodeOutlined
                                 onClick={() => Modal.confirm({
@@ -168,7 +168,7 @@ export function Token (): JSX.Element {
                                   icon: null,
                                   maskClosable: true,
                                   content: <div style={{ width: '100%', textAlign: 'center' }}>
-                                    <Button type='link' style={{ height: '20rem' }} onClick={() => { window.location.href = value.url }}>
+                                    <Button type='link' style={{ height: '19rem' }} onClick={() => { window.location.href = value.url }}>
                                       <QRCodeSVG value={value.url} size={300} style={{ border: '1rem solid #fff' }}/>
                                     </Button>
                                   </div>
@@ -179,27 +179,29 @@ export function Token (): JSX.Element {
                           </Space>
                         </Col>
                       </Row>
-                      <Button type='link' onClick={() => { copy(value.token ?? '-') }} style={{ padding: 0, height: '4rem', marginLeft: '-0.25rem' }}>
+                      <Button type='link' onClick={() => { copy(value.token ?? '-') }} style={{ padding: 0, height: '5rem', marginLeft: '-0.25rem' }}>
                         <span className={'token' + (timeLeft <= 3 ? ' token-danger' : '') + (isFastForward ? ' token-fast-forward' : '')} key='TokenValue' >
                                 {value.token ?? '-'}
                             </span>
                       </Button>
                         <Row>
-                            <Col span={20}>
+                            <Col span={19}>
                                 {value.accountName} ({value.period ?? `${TIME}s`})
+                            </Col>
+                            <Col span={1} style={{ textAlign: 'center', fontSize: '1rem' }}>
+                              {
+                                isFastForward
+                                  ? <FastBackwardOutlined onClick={() => { fastBackwardToken(index) }} />
+                                  : <FastForwardOutlined onClick={() => { fastForwardToken(index) }} />
+                              }
                             </Col>
                             <Col span={4} style={{ textAlign: 'right' }}>
                                 <Space>
-                                  {
-                                  isFastForward
-                                    ? <FastBackwardOutlined onClick={() => { fastBackwardToken(index) }} />
-                                    : <FastForwardOutlined onClick={() => { fastForwardToken(index) }} />
-                                  }
                                     <span style={{ fontSize: '1rem' }} key='TokenTime' className={(timeLeft <= 3 ? ' token-danger' : '') + (isFastForward ? ' token-fast-forward' : '')}>{timeLeft}</span>
                                     <Progress
                                         className={'token-progress' + (timeLeft <= 3 ? ' token-progress-danger' : '') + (isFastForward ? 'token-progress-fast-forward' : '')}
                                         type="circle"
-                                        strokeWidth={24}
+                                        strokeWidth={25}
                                         width={'1.25rem' as any}
                                         percent={period > timeLeft ? Math.floor((period - timeLeft) / period * 100) : 100}
                                         format={() => ''} />
