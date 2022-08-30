@@ -29,3 +29,16 @@
   color: var(--token-fast-forward-color) !important;
   stroke: var(--token-fast-forward-color) !important;
 }
+
+.copy-notification {
+  border-radius: 0.75rem !important;
+  padding: 0.75rem;
+}
+
+.copy-notification .ant-notification-notice-icon {
+  display: none;
+}
+
+.copy-notification .ant-notification-notice-message {
+  margin-left: 1rem;
+}
