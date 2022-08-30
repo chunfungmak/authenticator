@@ -1,3 +1,7 @@
 .display-qr-modal .ant-modal-confirm-btns{
     display: none
 }
+
+.token-card {
+    margin: 0.5rem
+}
