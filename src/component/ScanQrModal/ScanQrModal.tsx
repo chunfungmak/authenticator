@@ -21,6 +21,9 @@ export const ScanQrModal = memo(({ isModalVisible, setIsModalVisible, addQrValue
           addQrValue(value)
           setIsModalVisible(false)
         }}
+        videoConstraints={{
+          facingMode: 'environment'
+        }}
     />}
 </Modal>, (prev, next) => {
   return prev.isModalVisible === next.isModalVisible
