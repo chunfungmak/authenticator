@@ -46,6 +46,7 @@ module.exports = override(
         fallback: {
             "stream": require.resolve("stream-browserify"),
             "crypto": require.resolve("crypto-browserify"),
+            "path": require.resolve("path-browserify"),
             "buffer": require.resolve("buffer/")
         }
     })

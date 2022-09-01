@@ -94,8 +94,8 @@ export function Token (): JSX.Element {
     triggerFn(payload)
   }
 
-  const addQrValue = (value: string): void => {
-    const payload = [...state.tokenList, convertOtauthUrl(value)]
+  const addQrValue = async (value: string): Promise<void> => {
+    const payload = [...state.tokenList, ...await convertOtauthUrl(value)]
     store.dispatch({
       type: StateAction.SET_TOKEN_LIST,
       data: payload
@@ -189,7 +189,7 @@ export function Token (): JSX.Element {
                             <Space direction='vertical' size={1} style={{ width: '100%' }}>
                               <Row>
                                 <Col span={19} {...provided.dragHandleProps}>
-                                  {value.issuer}
+                                  {value.issuer !== '' ? value.issuer : value.accountName }
                                 </Col>
                                 <Col span={5} style={{ textAlign: 'right' }}>
                                   <Space>
