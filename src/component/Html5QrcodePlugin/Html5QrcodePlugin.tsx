@@ -18,6 +18,7 @@ interface Html5QrcodePluginConfig {
   qrCodeErrorCallback?: QrcodeErrorCallback
   verbose?: boolean
   rememberLastUsedCamera?: boolean
+  videoConstraints?: MediaTrackConstraints
 }
 
 class Html5QrcodePlugin extends React.Component<Html5QrcodePluginConfig> {
@@ -70,6 +71,9 @@ class Html5QrcodePlugin extends React.Component<Html5QrcodePluginConfig> {
     }
     if (props.disableFlip != null) {
       config.disableFlip = props.disableFlip
+    }
+    if (props.videoConstraints != null) {
+      config.videoConstraints = props.videoConstraints
     }
     return config
   }
