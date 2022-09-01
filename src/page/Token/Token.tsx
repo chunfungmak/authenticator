@@ -13,6 +13,7 @@ import { QrcodeOutlined, DeleteOutlined, PlusOutlined, MoreOutlined, FastForward
 import QRCodeSVG from 'qrcode.react'
 import { ThemeSwitch } from '../../component/ThemeSwitch/ThemeSwitch'
 import { generateToken } from '../../util/GenerateToken'
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 
 const TIME = 30
 
@@ -23,6 +24,9 @@ export function Token (): JSX.Element {
 
   const [tokenList, setTokenList] = useState<ConvertOtauthModel[]>([])
   const triggerFn = (value?: ConvertOtauthModel[]): void => {
+    if (value != null) {
+      value = JSON.parse(JSON.stringify(value))
+    }
     const time = new Date().getTime()
     setTokenList(tokenList => (value ?? tokenList).map(e => {
       const period = e.period != null ? parseInt(e.period) : TIME
@@ -46,8 +50,7 @@ export function Token (): JSX.Element {
     triggerFn(state.tokenList)
     const interval = setInterval(() => {
       triggerFn()
-    }, 100)
-
+    }, 1)
     return () => clearInterval(interval)
   }, [])
 
@@ -110,6 +113,18 @@ export function Token (): JSX.Element {
     triggerFn(payload)
   }
 
+  const dnd = (index: number, targetIndex: number): void => {
+    const payload: ConvertOtauthModel[] = Object.assign([], state.tokenList)
+    const [remove] = payload.splice(index, 1)
+    payload.splice(targetIndex, 0, remove)
+
+    store.dispatch({
+      type: StateAction.SET_TOKEN_LIST,
+      data: payload
+    })
+    triggerFn(payload)
+  }
+
   return <>
         <div style={{ position: 'fixed', bottom: '1rem', right: '1rem', zIndex: '999' }}>
           <Button type="primary" onClick={() => { setIsModalVisible(true) }} shape="circle" icon={<PlusOutlined />} style={{ height: '3rem', width: '3rem' }}>
@@ -144,55 +159,68 @@ export function Token (): JSX.Element {
           </Row>
         </Card>
 
-        {tokenList.map((value, index) => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { period, timeLeft, isFastForward } = value.time ?? {
-            period: 0,
-            timeLeft: 0,
-            window: 0,
-            fastForward: 0,
-            isFastForward: false
-          }
-          return <>
-                <Card
-                    style={{ margin: '0.5rem' }}
-                    className="token-card"
-                >
-                    <Space direction='vertical' size={1} style={{ width: '100%' }}>
-                      <Row>
-                        <Col span={19}>
-                          {value.issuer}
-                        </Col>
-                        <Col span={5} style={{ textAlign: 'right' }}>
-                          <Space>
-                            <QrcodeOutlined
-                                onClick={() => Modal.confirm({
-                                  className: 'display-qr-modal',
-                                  icon: null,
-                                  maskClosable: true,
-                                  content: <div style={{ width: '100%', textAlign: 'center' }}>
-                                    <Button type='link' style={{ height: '19rem' }} onClick={() => { window.location.href = value.url }}>
-                                      <QRCodeSVG value={value.url} size={300} style={{ border: '1rem solid #fff' }}/>
-                                    </Button>
-                                  </div>
-                                })}
-                                style={{ fontSize: '1.25rem' }}
-                            />
-                            <DeleteOutlined onClick={() => removeQrValue(index)} style={{ fontSize: '1.25rem' }}/>
-                          </Space>
-                        </Col>
-                      </Row>
-                      <Button type='link' onClick={() => { copy(value.token ?? '-') }} style={{ padding: 0, height: '5rem', marginLeft: '-0.25rem' }}>
+        <DragDropContext
+            onDragEnd={(e) => {
+              if (e.destination?.index === undefined) return
+              dnd(e.source.index, e.destination.index)
+            }}
+        >
+          <Droppable droppableId="droppable-1" key="droppable-key-1">
+            {(provided, snapshot) => (
+              <div ref={provided.innerRef} {...provided.droppableProps} key="droppable-div-key-1">
+                {tokenList.map((value, index) => {
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  const { period, timeLeft, isFastForward } = value.time ?? {
+                    period: 0,
+                    timeLeft: 0,
+                    window: 0,
+                    fastForward: 0,
+                    isFastForward: false
+                  }
+                  return <>
+                    <Draggable draggableId={`draggable-${index}`} index={index}>
+                      {(provided, snapshot) => (
+                          <Card
+                              className="token-card"
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              key={`draggable-key-${index}`}
+                          >
+                            <Space direction='vertical' size={1} style={{ width: '100%' }}>
+                              <Row>
+                                <Col span={19} {...provided.dragHandleProps}>
+                                  {value.issuer}
+                                </Col>
+                                <Col span={5} style={{ textAlign: 'right' }}>
+                                  <Space>
+                                    <QrcodeOutlined
+                                        onClick={() => Modal.confirm({
+                                          className: 'display-qr-modal',
+                                          icon: null,
+                                          maskClosable: true,
+                                          content: <div style={{ width: '100%', textAlign: 'center' }}>
+                                            <Button type='link' style={{ height: '19rem' }} onClick={() => { window.location.href = value.url }}>
+                                              <QRCodeSVG value={value.url} size={300} style={{ border: '1rem solid #fff' }}/>
+                                            </Button>
+                                          </div>
+                                        })}
+                                        style={{ fontSize: '1.25rem' }}
+                                    />
+                                    <DeleteOutlined onClick={() => removeQrValue(index)} style={{ fontSize: '1.25rem' }}/>
+                                  </Space>
+                                </Col>
+                              </Row>
+                              <Button type='link' onClick={() => { copy(value.token ?? '-') }} style={{ padding: 0, height: '5rem', marginLeft: '-0.25rem' }}>
                         <span className={'token' + (timeLeft <= 3 ? ' token-danger' : '') + (isFastForward ? ' token-fast-forward' : '')} key='TokenValue' >
                                 {value.token ?? '-'}
                             </span>
-                      </Button>
-                        <Row>
-                            <Col span={19}>
-                                {value.accountName} ({value.period ?? `${TIME}s`})
-                            </Col>
-                            <Col span={5} style={{ textAlign: 'right' }}>
-                                <Space>
+                              </Button>
+                              <Row>
+                                <Col span={19}>
+                                  {value.accountName} ({value.period ?? `${TIME}s`})
+                                </Col>
+                                <Col span={5} style={{ textAlign: 'right' }}>
+                                  <Space>
                                     {
                                       isFastForward
                                         ? <FastBackwardOutlined style={{ fontSize: '1rem' }} onClick={() => { fastBackwardToken(index) }} />
@@ -203,16 +231,24 @@ export function Token (): JSX.Element {
                                         className={'token-progress' + (timeLeft <= 3 ? ' token-progress-danger' : '') + (isFastForward ? 'token-progress-fast-forward' : '')}
                                         type="circle"
                                         strokeWidth={25}
-                                        width={'1.25rem' as any}
+                                        width={20}
                                         percent={period > timeLeft ? Math.floor((period - timeLeft) / period * 100) : 100}
                                         format={() => ''} />
-                                </Space>
-                            </Col>
-                        </Row>
-                    </Space>
-                </Card>
+                                  </Space>
+                                </Col>
+                              </Row>
+                            </Space>
+                          </Card>
+                      )}
+                    </Draggable>
 
-            </>
-        })}
+                  </>
+                })}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+
     </>
 }
